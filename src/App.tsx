@@ -1,47 +1,41 @@
 import { useEffect, useRef, useState } from "react";
 
-type KeyboardProps =  {
-  onKeyPress?: (key: string) => void;
-  onKeyRelease?: (key: string) => void;
-}
-
-const App: React.FC<KeyboardProps> = ({ onKeyPress, onKeyRelease }) => {
+const App = () => {
   const [activeKeys, setActiveKeys] = useState<string[]>(['0_0'])
-  const keyboardRef = useRef<HTMLDivElement>(null);
 
+  const keyboardRef = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       e.preventDefault();
-      const key = e.code;
-      setActiveKeys(() => [key]);
-      console.log(`Key Down: ${key}`);
-      if (onKeyPress) {
-        onKeyPress(key);
-      }
-    };
-    
-    const handleKeyUp = (e: KeyboardEvent) => {
-      e.preventDefault();
-      const key = e.code;
-      setActiveKeys((prev) => prev.filter((k) => k !== key));
-      console.log(`Key Up: ${key}`);
-      if (onKeyRelease) {
-        onKeyRelease(key);
-      }
-    };
-    
+      const formattedCode = (() => {
+        if (e.code.startsWith('Key')) return e.code.slice(3);
+        if (e.code.startsWith('Digit')) return e.code.slice(5);
+        if (e.code.startsWith('Numpad')) return e.code.slice(6);
+        return e.code;
+      })();
 
+      setActiveKeys([formattedCode]); 
+    };
+    
+    // const handleKeyUp = (e: KeyboardEvent) => {
+    //   e.preventDefault();
+    //   setActiveKeys((prev) => prev.filter((key) => key !== e.code));
+
+    // };
+    
     const keyboard = keyboardRef.current;
     console.log("Keyboard",keyboard);
     if (keyboard) {
       keyboard.addEventListener('keydown', handleKeyDown);
-      keyboard.addEventListener('keyup', handleKeyUp);
+      // keyboard.addEventListener('keyup', handleKeyUp);
     }
-
+    
+    
     return () => {
       if (keyboard) {
         keyboard.removeEventListener('keydown', handleKeyDown);
-        keyboard.removeEventListener('keyup', handleKeyUp);
+        // keyboard.removeEventListener('keyup', handleKeyUp);
       }
     };
   }, []);
